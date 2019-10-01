@@ -12,8 +12,6 @@
 
 namespace TntSearch;
 
-require_once __DIR__ . '/vendor/autoload.php';
-
 use Propel\Runtime\Connection\ConnectionInterface;
 use Symfony\Component\Yaml\Yaml;
 use Thelia\Config\DatabaseConfigurationSource;

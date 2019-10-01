@@ -8,9 +8,6 @@
 
 namespace TntSearch\Controller;
 
-require_once __DIR__ . '/../vendor/autoload.php';
-
-
 use TeamTNT\TNTSearch\TNTSearch;
 use Thelia\Controller\Admin\BaseAdminController;
 use Thelia\Model\LangQuery;
