@@ -11,7 +11,10 @@ namespace TntSearch\EventListeners;
 
 
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
-use TeamTNT\TNTSearch\TNTSearch;
+use Thelia\Model\Brand;
+use Thelia\Model\Category;
+use Thelia\Model\Content;
+use Thelia\Model\Customer;
 use Thelia\Model\Event\BrandEvent;
 use Thelia\Model\Event\CategoryEvent;
 use Thelia\Model\Event\ContentEvent;
@@ -19,7 +22,11 @@ use Thelia\Model\Event\CustomerEvent;
 use Thelia\Model\Event\FolderEvent;
 use Thelia\Model\Event\OrderEvent;
 use Thelia\Model\Event\ProductEvent;
+use Thelia\Model\Folder;
 use Thelia\Model\LangQuery;
+use Thelia\Model\Order;
+use Thelia\Model\Product;
+use TntSearch\TntSearch;
 
 class UpdateListener implements EventSubscriberInterface
 {
@@ -65,20 +72,12 @@ class UpdateListener implements EventSubscriberInterface
     {
         $customer = $event->getModel();
 
-        $tnt = new TNTSearch();
-
-        $tnt->loadConfig(\TntSearch\TntSearch::getTntConfig());
+        $tnt = TntSearch::getTntSearch();
         $tnt->selectIndex("customer.index");
 
         $index = $tnt->getIndex();
 
-        $index->update($customer->getId(),[
-            'id' => $customer->getId(),
-            'ref' => $customer->getRef(),
-            'firstname' => $customer->getFirstname(),
-            'lastname' => $customer->getLastname(),
-            'email' => $customer->getEmail()
-        ]);
+        $index->update($customer->getId(),$this->getCustomerData($customer));
     }
     /**
      * @param CustomerEvent $event
@@ -88,20 +87,12 @@ class UpdateListener implements EventSubscriberInterface
     {
         $customer = $event->getModel();
 
-        $tnt = new TNTSearch();
-
-        $tnt->loadConfig(\TntSearch\TntSearch::getTntConfig());
+        $tnt = TntSearch::getTntSearch();
         $tnt->selectIndex("customer.index");
 
         $index = $tnt->getIndex();
 
-        $index->insert([
-            'id' => $customer->getId(),
-            'ref' => $customer->getRef(),
-            'firstname' => $customer->getFirstname(),
-            'lastname' => $customer->getLastname(),
-            'email' => $customer->getEmail()
-        ]);
+        $index->insert($this->getCustomerData($customer));
     }
     /**
      * @param CustomerEvent $event
@@ -111,9 +102,7 @@ class UpdateListener implements EventSubscriberInterface
     {
         $customer = $event->getModel();
 
-        $tnt = new TNTSearch();
-
-        $tnt->loadConfig(\TntSearch\TntSearch::getTntConfig());
+        $tnt = TntSearch::getTntSearch();
         $tnt->selectIndex("customer.index");
 
         $index = $tnt->getIndex();
@@ -130,26 +119,13 @@ class UpdateListener implements EventSubscriberInterface
     public function updateOrderIndex(OrderEvent $event)
     {
         $order = $event->getModel();
-        $customer = $order->getCustomer();
 
-        $tnt = new TNTSearch();
-
-        $tnt->loadConfig(\TntSearch\TntSearch::getTntConfig());
+        $tnt = TntSearch::getTntSearch();
         $tnt->selectIndex("order.index");
 
         $index = $tnt->getIndex();
 
-        $index->update($order->getId(),[
-            'id' => $order->getId(),
-            'ref' => $order->getRef(),
-            'customer_ref' => $customer->getRef(),
-            'firstname' => $customer->getFirstname(),
-            'lastname' => $customer->getLastname(),
-            'email' => $customer->getEmail(),
-            'invoice_ref' => $order->getInvoiceRef(),
-            'transaction_ref' => $order->getTransactionRef(),
-            'delivery_ref' => $order->getDeliveryRef()
-        ]);
+        $index->update($order->getId(), $this->getOrderData($order));
     }
     /**
      * @param OrderEvent $event
@@ -159,26 +135,13 @@ class UpdateListener implements EventSubscriberInterface
     public function createOrderIndex(OrderEvent $event)
     {
         $order = $event->getModel();
-        $customer = $order->getCustomer();
 
-        $tnt = new TNTSearch();
-
-        $tnt->loadConfig(\TntSearch\TntSearch::getTntConfig());
+        $tnt = TntSearch::getTntSearch();
         $tnt->selectIndex("order.index");
 
         $index = $tnt->getIndex();
 
-        $index->insert([
-            'id' => $order->getId(),
-            'ref' => $order->getRef(),
-            'customer_ref' => $customer->getRef(),
-            'firstname' => $customer->getFirstname(),
-            'lastname' => $customer->getLastname(),
-            'email' => $customer->getEmail(),
-            'invoice_ref' => $order->getInvoiceRef(),
-            'transaction_ref' => $order->getTransactionRef(),
-            'delivery_ref' => $order->getDeliveryRef()
-        ]);
+        $index->insert($this->getOrderData($order));
     }
     /**
      * @param OrderEvent $event
@@ -188,9 +151,7 @@ class UpdateListener implements EventSubscriberInterface
     {
         $order = $event->getModel();
 
-        $tnt = new TNTSearch();
-
-        $tnt->loadConfig(\TntSearch\TntSearch::getTntConfig());
+        $tnt = TntSearch::getTntSearch();
         $tnt->selectIndex("order.index");
 
         $index = $tnt->getIndex();
@@ -207,20 +168,11 @@ class UpdateListener implements EventSubscriberInterface
     {
         $product = $event->getModel();
 
-        $tnt = new TNTSearch();
-
-        $tnt->loadConfig(\TntSearch\TntSearch::getTntConfig());
+        $tnt = TntSearch::getTntSearch();
         $tnt->selectIndex("product_".$product->getLocale().".index");
 
         $index = $tnt->getIndex();
-        $index->update($product->getId(),[
-            'id' => $product->getId(),
-            'ref' => $product->getRef(),
-            'title' => $product->getTitle(),
-            'chapo' => $product->getChapo(),
-            'description' => $product->getDescription(),
-            'postscriptum' => $product->getPostscriptum()
-        ]);
+        $index->update($product->getId(), $this->getProductData($product));
     }
     /**
      * @param ProductEvent $event
@@ -230,22 +182,13 @@ class UpdateListener implements EventSubscriberInterface
     {
         $product = $event->getModel();
         $langs = LangQuery::create()->filterByByDefault(1)->find();
-        $tnt = new TNTSearch();
-
-        $tnt->loadConfig(\TntSearch\TntSearch::getTntConfig());
+        $tnt = TntSearch::getTntSearch();
 
         foreach ($langs as $lang){
             $tnt->selectIndex("product_".$lang->getLocale().".index");
             $product->setLocale($lang->getLocale());
             $index = $tnt->getIndex();
-            $index->insert([
-                'id' => $product->getId(),
-                'ref' => $product->getRef(),
-                'title' => $product->getTitle(),
-                'chapo' => $product->getChapo(),
-                'description' => $product->getDescription(),
-                'postscriptum' => $product->getPostscriptum()
-            ]);
+            $index->insert($this->getProductData($product));
         }
     }
     /**
@@ -256,9 +199,8 @@ class UpdateListener implements EventSubscriberInterface
     {
         $product = $event->getModel();
         $langs = LangQuery::create()->filterByActive(1)->find();
-        $tnt = new TNTSearch();
 
-        $tnt->loadConfig(\TntSearch\TntSearch::getTntConfig());
+        $tnt = TntSearch::getTntSearch();
         foreach ($langs as $lang){
             $tnt->selectIndex("product_".$lang->getLocale().".index");
 
@@ -277,19 +219,11 @@ class UpdateListener implements EventSubscriberInterface
     {
         $category = $event->getModel();
 
-        $tnt = new TNTSearch();
-
-        $tnt->loadConfig(\TntSearch\TntSearch::getTntConfig());
+        $tnt = TntSearch::getTntSearch();
         $tnt->selectIndex("category_".$category->getLocale().".index");
 
         $index = $tnt->getIndex();
-        $index->update($category->getId(),[
-            'id' => $category->getId(),
-            'title' => $category->getTitle(),
-            'chapo' => $category->getChapo(),
-            'description' => $category->getDescription(),
-            'postscriptum' => $category->getPostscriptum()
-        ]);
+        $index->update($category->getId(), $this->getCategoryData($category));
     }
     /**
      * @param CategoryEvent $event
@@ -299,21 +233,13 @@ class UpdateListener implements EventSubscriberInterface
     {
         $category = $event->getModel();
         $langs = LangQuery::create()->filterByByDefault(1)->find();
-        $tnt = new TNTSearch();
-
-        $tnt->loadConfig(\TntSearch\TntSearch::getTntConfig());
+        $tnt = TntSearch::getTntSearch();
 
         foreach ($langs as $lang){
             $tnt->selectIndex("category_".$lang->getLocale().".index");
             $index = $tnt->getIndex();
             $category->setLocale($lang->getLocale());
-            $index->insert([
-                'id' => $category->getId(),
-                'title' => $category->getTitle(),
-                'chapo' => $category->getChapo(),
-                'description' => $category->getDescription(),
-                'postscriptum' => $category->getPostscriptum()
-            ]);
+            $index->insert($this->getCategoryData($category));
         }
     }
     /**
@@ -325,9 +251,8 @@ class UpdateListener implements EventSubscriberInterface
 
         $category = $event->getModel();
         $langs = LangQuery::create()->filterByActive(1)->find();
-        $tnt = new TNTSearch();
+        $tnt = TntSearch::getTntSearch();
 
-        $tnt->loadConfig(\TntSearch\TntSearch::getTntConfig());
         foreach ($langs as $lang){
             $tnt->selectIndex("category_".$lang->getLocale().".index");
 
@@ -346,19 +271,11 @@ class UpdateListener implements EventSubscriberInterface
     {
         $folder = $event->getModel();
 
-        $tnt = new TNTSearch();
-
-        $tnt->loadConfig(\TntSearch\TntSearch::getTntConfig());
+        $tnt = TntSearch::getTntSearch();
         $tnt->selectIndex("folder_".$folder->getLocale().".index");
 
         $index = $tnt->getIndex();
-        $index->update($folder->getId(),[
-            'id' => $folder->getId(),
-            'title' => $folder->getTitle(),
-            'chapo' => $folder->getChapo(),
-            'description' => $folder->getDescription(),
-            'postscriptum' => $folder->getPostscriptum()
-        ]);
+        $index->update($folder->getId(), $this->getFolderData($folder));
     }
     /**
      * @param FolderEvent $event
@@ -368,21 +285,13 @@ class UpdateListener implements EventSubscriberInterface
     {
         $folder = $event->getModel();
         $langs = LangQuery::create()->filterByByDefault(1)->find();
-        $tnt = new TNTSearch();
-
-        $tnt->loadConfig(\TntSearch\TntSearch::getTntConfig());
+        $tnt = TntSearch::getTntSearch();
 
         foreach ($langs as $lang){
             $tnt->selectIndex("folder_".$lang->getLocale().".index");
             $index = $tnt->getIndex();
             $folder->setLocale($lang->getLocale());
-            $index->insert([
-                'id' => $folder->getId(),
-                'title' => $folder->getTitle(),
-                'chapo' => $folder->getChapo(),
-                'description' => $folder->getDescription(),
-                'postscriptum' => $folder->getPostscriptum()
-            ]);
+            $index->insert($this->getFolderData($folder));
         }
     }
     /**
@@ -394,9 +303,7 @@ class UpdateListener implements EventSubscriberInterface
 
         $folder = $event->getModel();
         $langs = LangQuery::create()->filterByActive(1)->find();
-        $tnt = new TNTSearch();
-
-        $tnt->loadConfig(\TntSearch\TntSearch::getTntConfig());
+        $tnt = TntSearch::getTntSearch();
         foreach ($langs as $lang){
             $tnt->selectIndex("folder_".$lang->getLocale().".index");
 
@@ -415,19 +322,11 @@ class UpdateListener implements EventSubscriberInterface
     {
         $content = $event->getModel();
 
-        $tnt = new TNTSearch();
-
-        $tnt->loadConfig(\TntSearch\TntSearch::getTntConfig());
+        $tnt = TntSearch::getTntSearch();
         $tnt->selectIndex("content_".$content->getLocale().".index");
 
         $index = $tnt->getIndex();
-        $index->update($content->getId(),[
-            'id' => $content->getId(),
-            'title' => $content->getTitle(),
-            'chapo' => $content->getChapo(),
-            'description' => $content->getDescription(),
-            'postscriptum' => $content->getPostscriptum()
-        ]);
+        $index->update($content->getId(), $this->getContentData($content));
     }
     /**
      * @param ContentEvent $event
@@ -437,21 +336,13 @@ class UpdateListener implements EventSubscriberInterface
     {
         $content = $event->getModel();
         $langs = LangQuery::create()->filterByByDefault(1)->find();
-        $tnt = new TNTSearch();
-
-        $tnt->loadConfig(\TntSearch\TntSearch::getTntConfig());
+        $tnt = TntSearch::getTntSearch();
 
         foreach ($langs as $lang){
             $tnt->selectIndex("content_".$lang->getLocale().".index");
             $index = $tnt->getIndex();
             $content->setLocale($lang->getLocale());
-            $index->insert([
-                'id' => $content->getId(),
-                'title' => $content->getTitle(),
-                'chapo' => $content->getChapo(),
-                'description' => $content->getDescription(),
-                'postscriptum' => $content->getPostscriptum()
-            ]);
+            $index->insert($this->getContentData($content));
         }
     }
     /**
@@ -463,9 +354,7 @@ class UpdateListener implements EventSubscriberInterface
 
         $content = $event->getModel();
         $langs = LangQuery::create()->filterByActive(1)->find();
-        $tnt = new TNTSearch();
-
-        $tnt->loadConfig(\TntSearch\TntSearch::getTntConfig());
+        $tnt = TntSearch::getTntSearch();
         foreach ($langs as $lang){
             $tnt->selectIndex("content_".$lang->getLocale().".index");
 
@@ -484,19 +373,11 @@ class UpdateListener implements EventSubscriberInterface
     {
         $brand = $event->getModel();
 
-        $tnt = new TNTSearch();
-
-        $tnt->loadConfig(\TntSearch\TntSearch::getTntConfig());
+        $tnt = TntSearch::getTntSearch();
         $tnt->selectIndex("brand_".$brand->getLocale().".index");
 
         $index = $tnt->getIndex();
-        $index->update($brand->getId(),[
-            'id' => $brand->getId(),
-            'title' => $brand->getTitle(),
-            'chapo' => $brand->getChapo(),
-            'description' => $brand->getDescription(),
-            'postscriptum' => $brand->getPostscriptum()
-        ]);
+        $index->update($brand->getId(), $this->getBrandData($brand));
     }
     /**
      * @param BrandEvent $event
@@ -506,21 +387,13 @@ class UpdateListener implements EventSubscriberInterface
     {
         $brand = $event->getModel();
         $langs = LangQuery::create()->filterByByDefault(1)->find();
-        $tnt = new TNTSearch();
-
-        $tnt->loadConfig(\TntSearch\TntSearch::getTntConfig());
+        $tnt = TntSearch::getTntSearch();
 
         foreach ($langs as $lang){
             $tnt->selectIndex("brand_".$lang->getLocale().".index");
             $index = $tnt->getIndex();
             $brand->setLocale($lang->getLocale());
-            $index->insert([
-                'id' => $brand->getId(),
-                'title' => $brand->getTitle(),
-                'chapo' => $brand->getChapo(),
-                'description' => $brand->getDescription(),
-                'postscriptum' => $brand->getPostscriptum()
-            ]);
+            $index->insert($this->getBrandData($brand));
         }
     }
     /**
@@ -532,9 +405,7 @@ class UpdateListener implements EventSubscriberInterface
 
         $brand = $event->getModel();
         $langs = LangQuery::create()->filterByActive(1)->find();
-        $tnt = new TNTSearch();
-
-        $tnt->loadConfig(\TntSearch\TntSearch::getTntConfig());
+        $tnt = TntSearch::getTntSearch();
         foreach ($langs as $lang){
             $tnt->selectIndex("brand_".$lang->getLocale().".index");
 
@@ -542,5 +413,93 @@ class UpdateListener implements EventSubscriberInterface
 
             $index->delete($brand->getId());
         }
+    }
+
+    protected function getCustomerData(Customer $customer)
+    {
+        return [
+            'id' => $customer->getId(),
+            'ref' => $customer->getRef(),
+            'firstname' => $customer->getFirstname(),
+            'lastname' => $customer->getLastname(),
+            'email' => $customer->getEmail()
+        ];
+    }
+
+    /**
+     * @param Order $order
+     * @return array
+     * @throws \Propel\Runtime\Exception\PropelException
+     */
+    protected function getOrderData(Order $order)
+    {
+        $customer = $order->getCustomer();
+        return [
+            'id' => $order->getId(),
+            'ref' => $order->getRef(),
+            'customer_ref' => $customer->getRef(),
+            'firstname' => $customer->getFirstname(),
+            'lastname' => $customer->getLastname(),
+            'email' => $customer->getEmail(),
+            'invoice_ref' => $order->getInvoiceRef(),
+            'transaction_ref' => $order->getTransactionRef(),
+            'delivery_ref' => $order->getDeliveryRef()
+        ];
+    }
+
+    protected function getProductData(Product $product)
+    {
+        return [
+            'id' => $product->getId(),
+            'ref' => $product->getRef(),
+            'title' => $product->getTitle(),
+            'chapo' => $product->getChapo(),
+            'description' => $product->getDescription(),
+            'postscriptum' => $product->getPostscriptum()
+        ];
+    }
+
+    protected function getCategoryData(Category $category)
+    {
+        return [
+            'id' => $category->getId(),
+            'title' => $category->getTitle(),
+            'chapo' => $category->getChapo(),
+            'description' => $category->getDescription(),
+            'postscriptum' => $category->getPostscriptum()
+        ];
+    }
+
+    protected function getFolderData(Folder $folder)
+    {
+        return [
+            'id' => $folder->getId(),
+            'title' => $folder->getTitle(),
+            'chapo' => $folder->getChapo(),
+            'description' => $folder->getDescription(),
+            'postscriptum' => $folder->getPostscriptum()
+        ];
+    }
+
+    protected function getContentData(Content $content)
+    {
+        return [
+            'id' => $content->getId(),
+            'title' => $content->getTitle(),
+            'chapo' => $content->getChapo(),
+            'description' => $content->getDescription(),
+            'postscriptum' => $content->getPostscriptum()
+        ];
+    }
+
+    protected function getBrandData(Brand $brand)
+    {
+        return [
+            'id' => $brand->getId(),
+            'title' => $brand->getTitle(),
+            'chapo' => $brand->getChapo(),
+            'description' => $brand->getDescription(),
+            'postscriptum' => $brand->getPostscriptum()
+        ];
     }
 }

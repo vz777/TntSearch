@@ -25,12 +25,10 @@ class TntSearch extends BaseModule
 
     public function postActivation(ConnectionInterface $con = null)
     {
-        $tnt = new \TeamTNT\TNTSearch\TNTSearch;
 
         $langs = LangQuery::create()->filterByActive(1)->find();
 
-        $config = self::getTntConfig();
-        $tnt->loadConfig($config);
+        $tnt = self::getTntSearch();
 
         $indexer = $tnt->createIndex('customer.index');
         $indexer->query('SELECT id, ref, firstname, lastname, email FROM customer;');
@@ -47,7 +45,7 @@ class TntSearch extends BaseModule
                                 o.invoice_ref as invoice_ref, 
                                 o.transaction_ref as transaction_ref, 
                                 o.delivery_ref as delivery_ref 
-                                FROM '. $config['database'] .'.order as o LEFT JOIN customer as c ON o.customer_id = c.id;');
+                                FROM `order` as o LEFT JOIN customer as c ON o.customer_id = c.id;');
         $indexer->run();
 
         foreach ($langs as $lang){
@@ -116,7 +114,7 @@ class TntSearch extends BaseModule
         return $parameters;
     }
 
-    public static function getTntConfig()
+    public static function getTntSearch()
     {
         $configFile = THELIA_CONF_DIR . "database.yml";
 
@@ -143,7 +141,7 @@ class TntSearch extends BaseModule
             mkdir(THELIA_MODULE_DIR. "TntSearch" .DS. "Indexes");
         }
 
-        return $config = [
+        $config = [
             'driver' => $driver,
             'host' => $host,
             'database' => $database,
@@ -151,5 +149,10 @@ class TntSearch extends BaseModule
             'password' => $password,
             'storage'  => THELIA_MODULE_DIR. "TntSearch" .DS. "Indexes",
         ];
+
+        $tnt = new \TeamTNT\TNTSearch\TNTSearch;
+        $tnt->loadConfig($config);
+
+        return $tnt;
     }
 }

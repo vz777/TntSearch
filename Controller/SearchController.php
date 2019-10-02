@@ -8,9 +8,10 @@
 
 namespace TntSearch\Controller;
 
-use TeamTNT\TNTSearch\TNTSearch;
+
 use Thelia\Controller\Admin\BaseAdminController;
 use Thelia\Model\LangQuery;
+use TntSearch\TntSearch;
 
 class SearchController extends BaseAdminController
 {
@@ -22,8 +23,7 @@ class SearchController extends BaseAdminController
     {
         $term = $this->getRequest()->get('search_term');
 
-        $tnt = new TNTSearch();
-        $tnt->loadConfig(\TntSearch\TntSearch::getTntConfig());
+        $tnt = TntSearch::getTntSearch();
 
         $langs = LangQuery::create()->filterByActive(1)->find();
 
