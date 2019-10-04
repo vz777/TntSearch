@@ -11,18 +11,29 @@ namespace TntSearch\EventListeners;
 
 
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
-use Thelia\Model\Brand;
-use Thelia\Model\Category;
-use Thelia\Model\Content;
+use Thelia\Core\Event\Category\CategoryCreateEvent;
+use Thelia\Core\Event\Category\CategoryDeleteEvent;
+use Thelia\Core\Event\Category\CategoryUpdateEvent;
+use Thelia\Core\Event\Customer\CustomerEvent;
+use Thelia\Core\Event\Folder\FolderUpdateEvent;
+use Thelia\Core\Event\Order\OrderEvent;
+use Thelia\Core\Event\Product\ProductCreateEvent;
+use Thelia\Core\Event\Product\ProductDeleteEvent;
+use Thelia\Core\Event\Product\ProductUpdateEvent;
+use Thelia\Model\Base\Category;
 use Thelia\Model\Customer;
-use Thelia\Model\Event\BrandEvent;
-use Thelia\Model\Event\CategoryEvent;
-use Thelia\Model\Event\ContentEvent;
-use Thelia\Model\Event\CustomerEvent;
-use Thelia\Model\Event\FolderEvent;
-use Thelia\Model\Event\OrderEvent;
-use Thelia\Model\Event\ProductEvent;
 use Thelia\Model\Folder;
+use Thelia\Core\Event\Brand\BrandCreateEvent;
+use Thelia\Core\Event\Brand\BrandDeleteEvent;
+use Thelia\Core\Event\Brand\BrandUpdateEvent;
+use Thelia\Core\Event\Content\ContentCreateEvent;
+use Thelia\Core\Event\Content\ContentDeleteEvent;
+use Thelia\Core\Event\Content\ContentUpdateEvent;
+use Thelia\Core\Event\Folder\FolderCreateEvent;
+use Thelia\Core\Event\Folder\FolderDeleteEvent;
+use Thelia\Core\Event\TheliaEvents;
+use Thelia\Model\Brand;
+use Thelia\Model\Content;
 use Thelia\Model\LangQuery;
 use Thelia\Model\Order;
 use Thelia\Model\Product;
@@ -33,33 +44,31 @@ class UpdateListener implements EventSubscriberInterface
     public static function getSubscribedEvents()
     {
         return [
-            CustomerEvent::POST_SAVE => 'createCustomerIndex',
-            CustomerEvent::POST_UPDATE => 'updateCustomerIndex',
-            CustomerEvent::PRE_DELETE => 'deleteCustomerIndex',
+            TheliaEvents::CUSTOMER_CREATEACCOUNT => 'createCustomerIndex',
+            TheliaEvents::CUSTOMER_UPDATEACCOUNT => 'updateCustomerIndex',
+            TheliaEvents::CUSTOMER_DELETEACCOUNT => 'deleteCustomerIndex',
 
-            OrderEvent::POST_SAVE => 'createOrderIndex',
-            OrderEvent::POST_UPDATE => 'updateOrderIndex',
-            OrderEvent::PRE_DELETE => 'deleteOrderIndex',
+            TheliaEvents::ORDER_AFTER_CREATE => 'createOrderIndex',
 
-            ProductEvent::POST_SAVE => 'createProductIndex',
-            ProductEvent::POST_UPDATE => 'updateProductIndex',
-            ProductEvent::PRE_DELETE => 'deleteProductIndex',
+            TheliaEvents::PRODUCT_CREATE => 'createProductIndex',
+            TheliaEvents::PRODUCT_UPDATE => 'updateProductIndex',
+            TheliaEvents::PRODUCT_DELETE => 'deleteProductIndex',
 
-            CategoryEvent::POST_SAVE => 'createCategoryIndex',
-            CategoryEvent::POST_UPDATE => 'updateCategoryIndex',
-            CategoryEvent::PRE_DELETE => 'deleteCategoryIndex',
+            TheliaEvents::CATEGORY_CREATE => 'createCategoryIndex',
+            TheliaEvents::CATEGORY_UPDATE => 'updateCategoryIndex',
+            TheliaEvents::CATEGORY_DELETE => 'deleteCategoryIndex',
 
-            ContentEvent::POST_SAVE => 'createContentIndex',
-            ContentEvent::POST_UPDATE => 'updateContentIndex',
-            ContentEvent::PRE_DELETE => 'deleteContentIndex',
+            TheliaEvents::CONTENT_CREATE => 'createContentIndex',
+            TheliaEvents::CONTENT_UPDATE => 'updateContentIndex',
+            TheliaEvents::CONTENT_DELETE => 'deleteContentIndex',
 
-            FolderEvent::POST_SAVE => 'createFolderIndex',
-            FolderEvent::POST_UPDATE => 'updateFolderIndex',
-            FolderEvent::PRE_DELETE => 'deleteFolderIndex',
+            TheliaEvents::FOLDER_CREATE => 'createFolderIndex',
+            TheliaEvents::FOLDER_UPDATE => 'updateFolderIndex',
+            TheliaEvents::FOLDER_DELETE => 'deleteFolderIndex',
 
-            BrandEvent::POST_SAVE => 'createBrandIndex',
-            BrandEvent::POST_UPDATE => 'updateBrandIndex',
-            BrandEvent::PRE_DELETE => 'deleteBrandIndex',
+            TheliaEvents::BRAND_CREATE => 'createBrandIndex',
+            TheliaEvents::BRAND_UPDATE => 'updateBrandIndex',
+            TheliaEvents::BRAND_DELETE => 'deleteBrandIndex',
         ];
     }
 
@@ -70,37 +79,40 @@ class UpdateListener implements EventSubscriberInterface
      */
     public function updateCustomerIndex(CustomerEvent $event)
     {
-        $customer = $event->getModel();
+        $customer = $event->getCustomer();
 
         $tnt = TntSearch::getTntSearch();
         $tnt->selectIndex("customer.index");
 
         $index = $tnt->getIndex();
 
-        $index->update($customer->getId(),$this->getCustomerData($customer));
+        $index->update($customer->getId(), $this->getCustomerData($customer));
     }
+
     /**
      * @param CustomerEvent $event
      * @throws \TeamTNT\TNTSearch\Exceptions\IndexNotFoundException
      */
     public function createCustomerIndex(CustomerEvent $event)
     {
-        $customer = $event->getModel();
+        $customer = $event->getCustomer();
 
         $tnt = TntSearch::getTntSearch();
+
         $tnt->selectIndex("customer.index");
 
         $index = $tnt->getIndex();
 
         $index->insert($this->getCustomerData($customer));
     }
+
     /**
      * @param CustomerEvent $event
      * @throws \TeamTNT\TNTSearch\Exceptions\IndexNotFoundException
      */
     public function deleteCustomerIndex(CustomerEvent $event)
     {
-        $customer = $event->getModel();
+        $customer = $event->getCustomer();
 
         $tnt = TntSearch::getTntSearch();
         $tnt->selectIndex("customer.index");
@@ -110,23 +122,6 @@ class UpdateListener implements EventSubscriberInterface
         $index->delete($customer->getId());
     }
 
-
-    /**
-     * @param OrderEvent $event
-     * @throws \Propel\Runtime\Exception\PropelException
-     * @throws \TeamTNT\TNTSearch\Exceptions\IndexNotFoundException
-     */
-    public function updateOrderIndex(OrderEvent $event)
-    {
-        $order = $event->getModel();
-
-        $tnt = TntSearch::getTntSearch();
-        $tnt->selectIndex("order.index");
-
-        $index = $tnt->getIndex();
-
-        $index->update($order->getId(), $this->getOrderData($order));
-    }
     /**
      * @param OrderEvent $event
      * @throws \Propel\Runtime\Exception\PropelException
@@ -134,7 +129,7 @@ class UpdateListener implements EventSubscriberInterface
      */
     public function createOrderIndex(OrderEvent $event)
     {
-        $order = $event->getModel();
+        $order = $event->getOrder();
 
         $tnt = TntSearch::getTntSearch();
         $tnt->selectIndex("order.index");
@@ -143,30 +138,14 @@ class UpdateListener implements EventSubscriberInterface
 
         $index->insert($this->getOrderData($order));
     }
-    /**
-     * @param OrderEvent $event
-     * @throws \TeamTNT\TNTSearch\Exceptions\IndexNotFoundException
-     */
-    public function deleteOrderIndex(OrderEvent $event)
-    {
-        $order = $event->getModel();
-
-        $tnt = TntSearch::getTntSearch();
-        $tnt->selectIndex("order.index");
-
-        $index = $tnt->getIndex();
-
-        $index->delete($order->getId());
-    }
-
 
     /**
-     * @param ProductEvent $event
+     * @param ProductUpdateEvent $event
      * @throws \TeamTNT\TNTSearch\Exceptions\IndexNotFoundException
      */
-    public function updateProductIndex(ProductEvent $event)
+    public function updateProductIndex(ProductUpdateEvent $event)
     {
-        $product = $event->getModel();
+        $product = $event->getProduct();
 
         $tnt = TntSearch::getTntSearch();
         $tnt->selectIndex("product_".$product->getLocale().".index");
@@ -174,13 +153,14 @@ class UpdateListener implements EventSubscriberInterface
         $index = $tnt->getIndex();
         $index->update($product->getId(), $this->getProductData($product));
     }
+
     /**
-     * @param ProductEvent $event
+     * @param ProductCreateEvent $event
      * @throws \TeamTNT\TNTSearch\Exceptions\IndexNotFoundException
      */
-    public function createProductIndex(ProductEvent $event)
+    public function createProductIndex(ProductCreateEvent $event)
     {
-        $product = $event->getModel();
+        $product = $event->getProduct();
         $langs = LangQuery::create()->filterByByDefault(1)->find();
         $tnt = TntSearch::getTntSearch();
 
@@ -191,16 +171,17 @@ class UpdateListener implements EventSubscriberInterface
             $index->insert($this->getProductData($product));
         }
     }
+
     /**
-     * @param ProductEvent $event
+     * @param ProductDeleteEvent $event
      * @throws \TeamTNT\TNTSearch\Exceptions\IndexNotFoundException
      */
-    public function deleteProductIndex(ProductEvent $event)
+    public function deleteProductIndex(ProductDeleteEvent $event)
     {
-        $product = $event->getModel();
+        $product = $event->getProduct();
         $langs = LangQuery::create()->filterByActive(1)->find();
-
         $tnt = TntSearch::getTntSearch();
+
         foreach ($langs as $lang){
             $tnt->selectIndex("product_".$lang->getLocale().".index");
 
@@ -212,26 +193,28 @@ class UpdateListener implements EventSubscriberInterface
 
 
     /**
-     * @param CategoryEvent $event
+     * @param CategoryUpdateEvent $event
      * @throws \TeamTNT\TNTSearch\Exceptions\IndexNotFoundException
      */
-    public function updateCategoryIndex(CategoryEvent $event)
+    public function updateCategoryIndex(CategoryUpdateEvent $event)
     {
-        $category = $event->getModel();
+        $category = $event->getCategory();
 
         $tnt = TntSearch::getTntSearch();
+
         $tnt->selectIndex("category_".$category->getLocale().".index");
 
         $index = $tnt->getIndex();
         $index->update($category->getId(), $this->getCategoryData($category));
     }
+
     /**
-     * @param CategoryEvent $event
+     * @param CategoryCreateEvent $event
      * @throws \TeamTNT\TNTSearch\Exceptions\IndexNotFoundException
      */
-    public function createCategoryIndex(CategoryEvent $event)
+    public function createCategoryIndex(CategoryCreateEvent $event)
     {
-        $category = $event->getModel();
+        $category = $event->getCategory();
         $langs = LangQuery::create()->filterByByDefault(1)->find();
         $tnt = TntSearch::getTntSearch();
 
@@ -242,14 +225,15 @@ class UpdateListener implements EventSubscriberInterface
             $index->insert($this->getCategoryData($category));
         }
     }
+
     /**
-     * @param CategoryEvent $event
+     * @param CategoryDeleteEvent $event
      * @throws \TeamTNT\TNTSearch\Exceptions\IndexNotFoundException
      */
-    public function deleteCategoryIndex(CategoryEvent $event)
+    public function deleteCategoryIndex(CategoryDeleteEvent $event)
     {
 
-        $category = $event->getModel();
+        $category = $event->getCategory();
         $langs = LangQuery::create()->filterByActive(1)->find();
         $tnt = TntSearch::getTntSearch();
 
@@ -264,26 +248,28 @@ class UpdateListener implements EventSubscriberInterface
 
 
     /**
-     * @param FolderEvent $event
+     * @param FolderUpdateEvent $event
      * @throws \TeamTNT\TNTSearch\Exceptions\IndexNotFoundException
      */
-    public function updateFolderIndex(FolderEvent $event)
+    public function updateFolderIndex(FolderUpdateEvent $event)
     {
-        $folder = $event->getModel();
+        $folder = $event->getFolder();
 
         $tnt = TntSearch::getTntSearch();
+
         $tnt->selectIndex("folder_".$folder->getLocale().".index");
 
         $index = $tnt->getIndex();
         $index->update($folder->getId(), $this->getFolderData($folder));
     }
+
     /**
-     * @param FolderEvent $event
+     * @param FolderCreateEvent $event
      * @throws \TeamTNT\TNTSearch\Exceptions\IndexNotFoundException
      */
-    public function createFolderIndex(FolderEvent $event)
+    public function createFolderIndex(FolderCreateEvent $event)
     {
-        $folder = $event->getModel();
+        $folder = $event->getFolder();
         $langs = LangQuery::create()->filterByByDefault(1)->find();
         $tnt = TntSearch::getTntSearch();
 
@@ -291,19 +277,28 @@ class UpdateListener implements EventSubscriberInterface
             $tnt->selectIndex("folder_".$lang->getLocale().".index");
             $index = $tnt->getIndex();
             $folder->setLocale($lang->getLocale());
-            $index->insert($this->getFolderData($folder));
+            $index->insert([
+                'id' => $folder->getId(),
+                'title' => $folder->getTitle(),
+                'chapo' => $folder->getChapo(),
+                'description' => $folder->getDescription(),
+                'postscriptum' => $folder->getPostscriptum()
+            ]);
         }
     }
+
     /**
-     * @param FolderEvent $event
+     * @param FolderDeleteEvent $event
      * @throws \TeamTNT\TNTSearch\Exceptions\IndexNotFoundException
      */
-    public function deleteFolderIndex(FolderEvent $event)
+    public function deleteFolderIndex(FolderDeleteEvent $event)
     {
 
-        $folder = $event->getModel();
+        $folder = $event->getFolder();
         $langs = LangQuery::create()->filterByActive(1)->find();
+
         $tnt = TntSearch::getTntSearch();
+
         foreach ($langs as $lang){
             $tnt->selectIndex("folder_".$lang->getLocale().".index");
 
@@ -315,26 +310,28 @@ class UpdateListener implements EventSubscriberInterface
 
 
     /**
-     * @param ContentEvent $event
+     * @param ContentUpdateEvent $event
      * @throws \TeamTNT\TNTSearch\Exceptions\IndexNotFoundException
      */
-    public function updateContentIndex(ContentEvent $event)
+    public function updateContentIndex(ContentUpdateEvent $event)
     {
-        $content = $event->getModel();
+        $content = $event->getContent();
 
         $tnt = TntSearch::getTntSearch();
+
         $tnt->selectIndex("content_".$content->getLocale().".index");
 
         $index = $tnt->getIndex();
         $index->update($content->getId(), $this->getContentData($content));
     }
+
     /**
-     * @param ContentEvent $event
+     * @param ContentCreateEvent $event
      * @throws \TeamTNT\TNTSearch\Exceptions\IndexNotFoundException
      */
-    public function createContentIndex(ContentEvent $event)
+    public function createContentIndex(ContentCreateEvent $event)
     {
-        $content = $event->getModel();
+        $content = $event->getContent();
         $langs = LangQuery::create()->filterByByDefault(1)->find();
         $tnt = TntSearch::getTntSearch();
 
@@ -345,16 +342,18 @@ class UpdateListener implements EventSubscriberInterface
             $index->insert($this->getContentData($content));
         }
     }
+
     /**
-     * @param ContentEvent $event
+     * @param ContentDeleteEvent $event
      * @throws \TeamTNT\TNTSearch\Exceptions\IndexNotFoundException
      */
-    public function deleteContentIndex(ContentEvent $event)
+    public function deleteContentIndex(ContentDeleteEvent $event)
     {
 
-        $content = $event->getModel();
+        $content = $event->getContent();
         $langs = LangQuery::create()->filterByActive(1)->find();
         $tnt = TntSearch::getTntSearch();
+
         foreach ($langs as $lang){
             $tnt->selectIndex("content_".$lang->getLocale().".index");
 
@@ -366,26 +365,28 @@ class UpdateListener implements EventSubscriberInterface
 
 
     /**
-     * @param BrandEvent $event
+     * @param BrandUpdateEvent $event
      * @throws \TeamTNT\TNTSearch\Exceptions\IndexNotFoundException
      */
-    public function updateBrandIndex(BrandEvent $event)
+    public function updateBrandIndex(BrandUpdateEvent $event)
     {
-        $brand = $event->getModel();
+        $brand = $event->getBrand();
 
         $tnt = TntSearch::getTntSearch();
+
         $tnt->selectIndex("brand_".$brand->getLocale().".index");
 
         $index = $tnt->getIndex();
         $index->update($brand->getId(), $this->getBrandData($brand));
     }
+
     /**
-     * @param BrandEvent $event
+     * @param BrandCreateEvent $event
      * @throws \TeamTNT\TNTSearch\Exceptions\IndexNotFoundException
      */
-    public function createBrandIndex(BrandEvent $event)
+    public function createBrandIndex(BrandCreateEvent $event)
     {
-        $brand = $event->getModel();
+        $brand = $event->getBrand();
         $langs = LangQuery::create()->filterByByDefault(1)->find();
         $tnt = TntSearch::getTntSearch();
 
@@ -396,25 +397,29 @@ class UpdateListener implements EventSubscriberInterface
             $index->insert($this->getBrandData($brand));
         }
     }
+
     /**
-     * @param BrandEvent $event
+     * @param BrandDeleteEvent $event
      * @throws \TeamTNT\TNTSearch\Exceptions\IndexNotFoundException
      */
-    public function deleteBrandIndex(BrandEvent $event)
+    public function deleteBrandIndex(BrandDeleteEvent $event)
     {
 
-        $brand = $event->getModel();
+        $brand = $event->getBrand();
         $langs = LangQuery::create()->filterByActive(1)->find();
         $tnt = TntSearch::getTntSearch();
+
         foreach ($langs as $lang){
             $tnt->selectIndex("brand_".$lang->getLocale().".index");
-
             $index = $tnt->getIndex();
-
             $index->delete($brand->getId());
         }
     }
 
+    /**
+     * @param Customer $customer
+     * @return array
+     */
     protected function getCustomerData(Customer $customer)
     {
         return [
@@ -447,6 +452,10 @@ class UpdateListener implements EventSubscriberInterface
         ];
     }
 
+    /**
+     * @param Product $product
+     * @return array
+     */
     protected function getProductData(Product $product)
     {
         return [
@@ -459,6 +468,10 @@ class UpdateListener implements EventSubscriberInterface
         ];
     }
 
+    /**
+     * @param Category $category
+     * @return array
+     */
     protected function getCategoryData(Category $category)
     {
         return [
@@ -470,6 +483,10 @@ class UpdateListener implements EventSubscriberInterface
         ];
     }
 
+    /**
+     * @param Folder $folder
+     * @return array
+     */
     protected function getFolderData(Folder $folder)
     {
         return [
@@ -481,6 +498,10 @@ class UpdateListener implements EventSubscriberInterface
         ];
     }
 
+    /**
+     * @param Content $content
+     * @return array
+     */
     protected function getContentData(Content $content)
     {
         return [
@@ -492,6 +513,10 @@ class UpdateListener implements EventSubscriberInterface
         ];
     }
 
+    /**
+     * @param Brand $brand
+     * @return array
+     */
     protected function getBrandData(Brand $brand)
     {
         return [
@@ -502,4 +527,5 @@ class UpdateListener implements EventSubscriberInterface
             'postscriptum' => $brand->getPostscriptum()
         ];
     }
+
 }

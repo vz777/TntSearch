@@ -8,8 +8,12 @@
 
 namespace TntSearch\Controller;
 
-
 use Thelia\Controller\Admin\BaseAdminController;
+use Thelia\Core\Thelia;
+use Thelia\Model\Brand;
+use Thelia\Model\Category;
+use Thelia\Model\Content;
+use Thelia\Model\Folder;
 use Thelia\Model\LangQuery;
 use TntSearch\TntSearch;
 
@@ -19,7 +23,7 @@ class SearchController extends BaseAdminController
      * @return \Thelia\Core\HttpFoundation\Response
      * @throws \TeamTNT\TNTSearch\Exceptions\IndexNotFoundException
      */
-    public function searchAction()
+    public function searchAdminAction()
     {
         $term = $this->getRequest()->get('search_term');
 
@@ -50,15 +54,38 @@ class SearchController extends BaseAdminController
             $tnt->selectIndex('brand_'.$lang->getLocale().'.index');
             $brands += $tnt->search($term)['ids'];
         }
+        if (version_compare(Thelia::THELIA_VERSION, '2.4.0-alpha2', 'lt')){
+            return $this->render('tntSearch/search2_3_4', $this->getSearchResult(
+                $brands,
+                $categories,
+                $contents,
+                $folders,
+                $products,
+                $orders,
+                $customers
+            ));
+        }
 
-        return $this->render('tntSearch/search', [
-            'brands' => implode(",",  array_unique($brands)),
-            'categories' => implode(",", array_unique($categories)),
-            'contents' => implode(",", array_unique($contents)),
-            'folders' => implode(",", array_unique($folders)),
-            'products' => implode(",", array_unique($products)),
-            'orders' => implode(",", $orders['ids']),
-            'customers' => implode(",", $customers['ids']),
-        ]);
+        return $this->render('tntSearch/search', $this->getSearchResult(
+            $brands,
+            $categories,
+            $contents,
+            $folders,
+            $products,
+            $orders,
+            $customers
+        ));
+
+    }
+
+    protected function getSearchResult($brands, $categories, $contents, $folders, $products, $orders, $customers)
+    {
+        return ['brands' => implode(",",  array_unique($brands)),
+                'categories' => implode(",", array_unique($categories)),
+                'contents' => implode(",", array_unique($contents)),
+                'folders' => implode(",", array_unique($folders)),
+                'products' => implode(",", array_unique($products)),
+                'orders' => implode(",", $orders['ids']),
+                'customers' => implode(",", $customers['ids'])];
     }
 }

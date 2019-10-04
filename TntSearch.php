@@ -14,7 +14,6 @@ namespace TntSearch;
 
 use Propel\Runtime\Connection\ConnectionInterface;
 use Symfony\Component\Yaml\Yaml;
-use Thelia\Config\DatabaseConfigurationSource;
 use Thelia\Model\LangQuery;
 use Thelia\Module\BaseModule;
 
@@ -25,6 +24,7 @@ class TntSearch extends BaseModule
 
     public function postActivation(ConnectionInterface $con = null)
     {
+
 
         $langs = LangQuery::create()->filterByActive(1)->find();
 
@@ -118,14 +118,9 @@ class TntSearch extends BaseModule
     {
         $configFile = THELIA_CONF_DIR . "database.yml";
 
-        $definePropel = new DatabaseConfigurationSource(
-            Yaml::parse(file_get_contents($configFile)),
-            TntSearch::getEnvParameters());
+        $propelParameters = Yaml::parse(file_get_contents($configFile))['database']['connection'];
 
-        $propelConfiguration = $definePropel->getPropelConnectionsConfiguration();
-        $propelParameters = $propelConfiguration['propel']['database']['connections']['thelia'];
-
-        $driver = $propelParameters['adapter'];
+        $driver = $propelParameters['driver'];
         $user = $propelParameters['user'];
         $password = $propelParameters['password'];
 
@@ -150,7 +145,7 @@ class TntSearch extends BaseModule
             'storage'  => THELIA_MODULE_DIR. "TntSearch" .DS. "Indexes",
         ];
 
-        $tnt = new \TeamTNT\TNTSearch\TNTSearch;
+        $tnt = new \TeamTNT\TNTSearch\TNTSearch();
         $tnt->loadConfig($config);
 
         return $tnt;

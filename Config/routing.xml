@@ -4,8 +4,8 @@
         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
         xsi:schemaLocation="http://symfony.com/schema/routing http://symfony.com/schema/routing/routing-1.0.xsd">
 
-    <route id="tntsearch.search" path="/admin/search">
-        <default key="_controller">TntSearch\Controller\SearchController::SearchAction</default>
+    <route id="tntsearch.admin.search" path="/admin/search">
+        <default key="_controller">TntSearch\Controller\SearchController::SearchAdminAction</default>
     </route>
 
 </routes>
