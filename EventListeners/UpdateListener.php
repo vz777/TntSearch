@@ -9,7 +9,6 @@
 namespace TntSearch\EventListeners;
 
 
-
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 use Thelia\Core\Event\Category\CategoryCreateEvent;
 use Thelia\Core\Event\Category\CategoryDeleteEvent;
@@ -148,7 +147,7 @@ class UpdateListener implements EventSubscriberInterface
         $product = $event->getProduct();
 
         $tnt = TntSearch::getTntSearch();
-        $tnt->selectIndex("product_".$product->getLocale().".index");
+        $tnt->selectIndex("product_" . $product->getLocale() . ".index");
 
         $index = $tnt->getIndex();
         $index->update($product->getId(), $this->getProductData($product));
@@ -164,8 +163,8 @@ class UpdateListener implements EventSubscriberInterface
         $langs = LangQuery::create()->filterByByDefault(1)->find();
         $tnt = TntSearch::getTntSearch();
 
-        foreach ($langs as $lang){
-            $tnt->selectIndex("product_".$lang->getLocale().".index");
+        foreach ($langs as $lang) {
+            $tnt->selectIndex("product_" . $lang->getLocale() . ".index");
             $product->setLocale($lang->getLocale());
             $index = $tnt->getIndex();
             $index->insert($this->getProductData($product));
@@ -182,8 +181,8 @@ class UpdateListener implements EventSubscriberInterface
         $langs = LangQuery::create()->filterByActive(1)->find();
         $tnt = TntSearch::getTntSearch();
 
-        foreach ($langs as $lang){
-            $tnt->selectIndex("product_".$lang->getLocale().".index");
+        foreach ($langs as $lang) {
+            $tnt->selectIndex("product_" . $lang->getLocale() . ".index");
 
             $index = $tnt->getIndex();
 
@@ -202,7 +201,7 @@ class UpdateListener implements EventSubscriberInterface
 
         $tnt = TntSearch::getTntSearch();
 
-        $tnt->selectIndex("category_".$category->getLocale().".index");
+        $tnt->selectIndex("category_" . $category->getLocale() . ".index");
 
         $index = $tnt->getIndex();
         $index->update($category->getId(), $this->getCategoryData($category));
@@ -218,8 +217,8 @@ class UpdateListener implements EventSubscriberInterface
         $langs = LangQuery::create()->filterByByDefault(1)->find();
         $tnt = TntSearch::getTntSearch();
 
-        foreach ($langs as $lang){
-            $tnt->selectIndex("category_".$lang->getLocale().".index");
+        foreach ($langs as $lang) {
+            $tnt->selectIndex("category_" . $lang->getLocale() . ".index");
             $index = $tnt->getIndex();
             $category->setLocale($lang->getLocale());
             $index->insert($this->getCategoryData($category));
@@ -237,8 +236,8 @@ class UpdateListener implements EventSubscriberInterface
         $langs = LangQuery::create()->filterByActive(1)->find();
         $tnt = TntSearch::getTntSearch();
 
-        foreach ($langs as $lang){
-            $tnt->selectIndex("category_".$lang->getLocale().".index");
+        foreach ($langs as $lang) {
+            $tnt->selectIndex("category_" . $lang->getLocale() . ".index");
 
             $index = $tnt->getIndex();
 
@@ -257,7 +256,7 @@ class UpdateListener implements EventSubscriberInterface
 
         $tnt = TntSearch::getTntSearch();
 
-        $tnt->selectIndex("folder_".$folder->getLocale().".index");
+        $tnt->selectIndex("folder_" . $folder->getLocale() . ".index");
 
         $index = $tnt->getIndex();
         $index->update($folder->getId(), $this->getFolderData($folder));
@@ -273,8 +272,8 @@ class UpdateListener implements EventSubscriberInterface
         $langs = LangQuery::create()->filterByByDefault(1)->find();
         $tnt = TntSearch::getTntSearch();
 
-        foreach ($langs as $lang){
-            $tnt->selectIndex("folder_".$lang->getLocale().".index");
+        foreach ($langs as $lang) {
+            $tnt->selectIndex("folder_" . $lang->getLocale() . ".index");
             $index = $tnt->getIndex();
             $folder->setLocale($lang->getLocale());
             $index->insert([
@@ -299,8 +298,8 @@ class UpdateListener implements EventSubscriberInterface
 
         $tnt = TntSearch::getTntSearch();
 
-        foreach ($langs as $lang){
-            $tnt->selectIndex("folder_".$lang->getLocale().".index");
+        foreach ($langs as $lang) {
+            $tnt->selectIndex("folder_" . $lang->getLocale() . ".index");
 
             $index = $tnt->getIndex();
 
@@ -319,7 +318,7 @@ class UpdateListener implements EventSubscriberInterface
 
         $tnt = TntSearch::getTntSearch();
 
-        $tnt->selectIndex("content_".$content->getLocale().".index");
+        $tnt->selectIndex("content_" . $content->getLocale() . ".index");
 
         $index = $tnt->getIndex();
         $index->update($content->getId(), $this->getContentData($content));
@@ -335,8 +334,8 @@ class UpdateListener implements EventSubscriberInterface
         $langs = LangQuery::create()->filterByByDefault(1)->find();
         $tnt = TntSearch::getTntSearch();
 
-        foreach ($langs as $lang){
-            $tnt->selectIndex("content_".$lang->getLocale().".index");
+        foreach ($langs as $lang) {
+            $tnt->selectIndex("content_" . $lang->getLocale() . ".index");
             $index = $tnt->getIndex();
             $content->setLocale($lang->getLocale());
             $index->insert($this->getContentData($content));
@@ -354,8 +353,8 @@ class UpdateListener implements EventSubscriberInterface
         $langs = LangQuery::create()->filterByActive(1)->find();
         $tnt = TntSearch::getTntSearch();
 
-        foreach ($langs as $lang){
-            $tnt->selectIndex("content_".$lang->getLocale().".index");
+        foreach ($langs as $lang) {
+            $tnt->selectIndex("content_" . $lang->getLocale() . ".index");
 
             $index = $tnt->getIndex();
 
@@ -374,7 +373,7 @@ class UpdateListener implements EventSubscriberInterface
 
         $tnt = TntSearch::getTntSearch();
 
-        $tnt->selectIndex("brand_".$brand->getLocale().".index");
+        $tnt->selectIndex("brand_" . $brand->getLocale() . ".index");
 
         $index = $tnt->getIndex();
         $index->update($brand->getId(), $this->getBrandData($brand));
@@ -390,8 +389,8 @@ class UpdateListener implements EventSubscriberInterface
         $langs = LangQuery::create()->filterByByDefault(1)->find();
         $tnt = TntSearch::getTntSearch();
 
-        foreach ($langs as $lang){
-            $tnt->selectIndex("brand_".$lang->getLocale().".index");
+        foreach ($langs as $lang) {
+            $tnt->selectIndex("brand_" . $lang->getLocale() . ".index");
             $index = $tnt->getIndex();
             $brand->setLocale($lang->getLocale());
             $index->insert($this->getBrandData($brand));
@@ -409,8 +408,8 @@ class UpdateListener implements EventSubscriberInterface
         $langs = LangQuery::create()->filterByActive(1)->find();
         $tnt = TntSearch::getTntSearch();
 
-        foreach ($langs as $lang){
-            $tnt->selectIndex("brand_".$lang->getLocale().".index");
+        foreach ($langs as $lang) {
+            $tnt->selectIndex("brand_" . $lang->getLocale() . ".index");
             $index = $tnt->getIndex();
             $index->delete($brand->getId());
         }

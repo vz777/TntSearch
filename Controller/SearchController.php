@@ -10,10 +10,6 @@ namespace TntSearch\Controller;
 
 use Thelia\Controller\Admin\BaseAdminController;
 use Thelia\Core\Thelia;
-use Thelia\Model\Brand;
-use Thelia\Model\Category;
-use Thelia\Model\Content;
-use Thelia\Model\Folder;
 use Thelia\Model\LangQuery;
 use TntSearch\TntSearch;
 
@@ -38,23 +34,23 @@ class SearchController extends BaseAdminController
         $orders = $tnt->search($term);
         $products = $categories = $folders = $contents = $brands = [];
 
-        foreach ($langs as $lang){
-            $tnt->selectIndex('product_'.$lang->getLocale().'.index');
+        foreach ($langs as $lang) {
+            $tnt->selectIndex('product_' . $lang->getLocale() . '.index');
             $products += $tnt->search($term)['ids'];
 
-            $tnt->selectIndex('category_'.$lang->getLocale().'.index');
+            $tnt->selectIndex('category_' . $lang->getLocale() . '.index');
             $categories += $tnt->search($term)['ids'];
 
-            $tnt->selectIndex('folder_'.$lang->getLocale().'.index');
+            $tnt->selectIndex('folder_' . $lang->getLocale() . '.index');
             $folders += $tnt->search($term)['ids'];
 
-            $tnt->selectIndex('content_'.$lang->getLocale().'.index');
+            $tnt->selectIndex('content_' . $lang->getLocale() . '.index');
             $contents += $tnt->search($term)['ids'];
 
-            $tnt->selectIndex('brand_'.$lang->getLocale().'.index');
+            $tnt->selectIndex('brand_' . $lang->getLocale() . '.index');
             $brands += $tnt->search($term)['ids'];
         }
-        if (version_compare(Thelia::THELIA_VERSION, '2.4.0-alpha2', 'lt')){
+        if (version_compare(Thelia::THELIA_VERSION, '2.4.0-alpha2', 'lt')) {
             return $this->render('tntSearch/search2_3_4', $this->getSearchResult(
                 $brands,
                 $categories,
@@ -80,12 +76,12 @@ class SearchController extends BaseAdminController
 
     protected function getSearchResult($brands, $categories, $contents, $folders, $products, $orders, $customers)
     {
-        return ['brands' => implode(",",  array_unique($brands)),
-                'categories' => implode(",", array_unique($categories)),
-                'contents' => implode(",", array_unique($contents)),
-                'folders' => implode(",", array_unique($folders)),
-                'products' => implode(",", array_unique($products)),
-                'orders' => implode(",", $orders['ids']),
-                'customers' => implode(",", $customers['ids'])];
+        return ['brands' => implode(",", array_unique($brands)),
+            'categories' => implode(",", array_unique($categories)),
+            'contents' => implode(",", array_unique($contents)),
+            'folders' => implode(",", array_unique($folders)),
+            'products' => implode(",", array_unique($products)),
+            'orders' => implode(",", $orders['ids']),
+            'customers' => implode(",", $customers['ids'])];
     }
 }

@@ -349,7 +349,7 @@
                     </thead>
 
                     <tbody>
-                    {loop type="product" name="product-search" backend_context=1 visible="*" id=$products}
+                    {loop type="product" name="product-search" backend_context=1 visible="*" id=$products order="given_id"}
                     {if $LOOP_COUNT < 26}
                         {$id_product=$ID}
                         <tr>
