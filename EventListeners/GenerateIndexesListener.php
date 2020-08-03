@@ -10,12 +10,7 @@ namespace TntSearch\EventListeners;
 
 
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
-use Symfony\Component\Filesystem\Filesystem;
-use Symfony\Component\Yaml\Yaml;
-use Thelia\Core\Event\Module\ModuleToggleActivationEvent;
-use Thelia\Core\Event\TheliaEvents;
 use Thelia\Model\Base\LangQuery;
-use Thelia\Model\Base\ModuleQuery;
 use TntSearch\Event\GenerateIndexesEvent;
 use TntSearch\TntSearch;
 
@@ -25,7 +20,7 @@ class GenerateIndexesListener implements EventSubscriberInterface
     {
         $langs = LangQuery::create()->filterByActive(1)->find();
 
-        $tnt = $this->getTntSearch();
+        $tnt = TntSearch::getTntSearch();
 
         $indexer = $tnt->createIndex('customer.index');
         $indexer->query('SELECT id, ref, firstname, lastname, email FROM customer;');
@@ -114,44 +109,5 @@ class GenerateIndexesListener implements EventSubscriberInterface
         return [
             GenerateIndexesEvent::GENERATE_INDEXES => 'generateIndexes',
         ];
-    }
-
-    protected function getTntSearch()
-    {
-        $configFile = THELIA_CONF_DIR . "database.yml";
-
-        $propelParameters = Yaml::parse(file_get_contents($configFile))['database']['connection'];
-
-        $driver = $propelParameters['driver'];
-        $user = $propelParameters['user'];
-        $password = $propelParameters['password'];
-
-        $explodeDns = explode(';', $propelParameters['dsn']);
-        $arrayDns = [];
-        foreach ($explodeDns as $param) {
-            $value = explode('=', $param);
-            $arrayDns[$value[0]] = $value[1];
-        }
-        $host = $arrayDns['mysql:host'];
-        $database = $arrayDns['dbname'];
-
-        if (!is_dir(TntSearch::INDEXES_DIR)) {
-            $fs = new Filesystem();
-            $fs->mkdir(TntSearch::INDEXES_DIR);
-        }
-
-        $config = [
-            'driver' => $driver,
-            'host' => $host,
-            'database' => $database,
-            'username' => $user,
-            'password' => $password,
-            'storage' => TntSearch::INDEXES_DIR,
-        ];
-
-        $tnt = new \TeamTNT\TNTSearch\TNTSearch();
-        $tnt->loadConfig($config);
-
-        return $tnt;
     }
 }
