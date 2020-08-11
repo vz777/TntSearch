@@ -5,28 +5,27 @@
         xsi:schemaLocation="http://thelia.net/schema/dic/config http://thelia.net/schema/dic/config/thelia-1.0.xsd">
 
     <loops>
-        <!-- sample definition
-        <loop name="MySuperLoop" class="TntSearch\Loop\MySuperLoop" />
-        -->
+        <loop name="tnt-search" class="TntSearch\Loop\TntSearchLoop" />
     </loops>
-
-    <forms>
-        <!--
-        <form name="MyFormName" class="TntSearch\Form\MySuperForm" />
-        -->
-    </forms>
-
-    <commands>
-        <!--
-        <command class="TntSearch\Command\MySuperCommand" />
-        -->
-    </commands>
-
 
     <services>
         <service id="tntsearch.update.listener" class="TntSearch\EventListeners\UpdateListener">
             <tag name="kernel.event_subscriber"/>
         </service>
+
+        <service id="tntsearch.generate.indexes.listener" class="TntSearch\EventListeners\GenerateIndexesListener">
+            <tag name="kernel.event_subscriber"/>
+        </service>
     </services>
+
+    <hooks>
+        <hook id="tntsearch.hook" class="TntSearch\Hook\BackHook">
+            <tag name="hook.event_listener" event="module.configuration" type="back" method="onModuleConfiguration"/>
+        </hook>
+    </hooks>
+
+    <commands>
+        <command class="TntSearch\Commands\GenerateIndexesCommand"/>
+    </commands>
 
 </config>

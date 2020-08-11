@@ -8,4 +8,8 @@
         <default key="_controller">TntSearch\Controller\SearchController::SearchAdminAction</default>
     </route>
 
+    <route id="tntsearch.generate.indexes" path="/admin/module/TntSearch/generateIndexes">
+        <default key="_controller">TntSearch\Controller\TntSearchController::generateIndexesAction</default>
+    </route>
+
 </routes>
